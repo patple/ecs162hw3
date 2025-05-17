@@ -87,8 +87,10 @@
         {/if}
         <h1>{article.headline.main}</h1>
         <p>{article.abstract}</p>
+        <button><strong>Comment</strong></button>
       </div>
     {/each}
+    
   </div>
 
   <footer>

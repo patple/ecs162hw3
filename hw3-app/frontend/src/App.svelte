@@ -26,18 +26,25 @@
     }
     
   });
+
+
 </script>
+
+
 
 <main>
 
   <header>
+
 
     <p class="Language">
         U.S.    International    Canada    Español    中文 <!--Language implementation.-->
     </p>
     <div class="button_container">
     <button class="button"><strong>SUBSCRIBE FOR $1/WEEK</strong></button> <!--Button implementation.-->
-    <button class="button"><strong>LOG IN</strong></button>
+
+   
+    <button class="button" on:click={() => window.location.href = 'http://127.0.0.1:8000/'}><strong>LOG IN</strong></button>
     </div>
 
     <!--Using flex box to implement the information in the header.-->

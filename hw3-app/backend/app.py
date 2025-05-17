@@ -1,10 +1,11 @@
-from flask import Flask, redirect, url_for, session
+from flask import Flask, redirect, url_for, jsonify, session
 from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 import os
-
+from flask_cors import CORS
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+CORS(app) 
 
 
 oauth = OAuth(app)
@@ -24,6 +25,9 @@ oauth.register(
     device_authorization_endpoint="http://dex:5556/device/code",
     client_kwargs={'scope': 'openid email profile'}
 )
+@app.route('/api/key')
+def get_key():
+    return jsonify({'apiKey': os.getenv('NYT_API_KEY')})
 
 @app.route('/')
 def home():

@@ -30,7 +30,7 @@
   function openSidebar(): void{
     const sidebar = document.getElementById("sideBarDisplay");
     if (sidebar){
-      sidebar.style.width = "100%"
+      sidebar.style.width = "30%"
     }
   }
 

@@ -27,10 +27,29 @@
     
   });
 
+  function openSidebar(): void{
+    const sidebar = document.getElementById("sideBarDisplay");
+    if (sidebar){
+      sidebar.style.width = "100%"
+    }
+  }
+
+  function closeSidebar(): void{
+    const sidebar = document.getElementById("sideBarDisplay");
+    if (sidebar){
+      sidebar.style.width = "0%"
+    }
+  }
 
 </script>
 
 
+<div id= "sideBarDisplay" class ="overLay">
+  <button class= "exitSidebar" on:click={closeSidebar}>X</button>
+  <div class ="sidebar-comments">
+    <p>Comments</p>
+  </div>
+</div>
 
 <main>
 
@@ -87,7 +106,7 @@
         {/if}
         <h1>{article.headline.main}</h1>
         <p>{article.abstract}</p>
-        <button><strong>Comment</strong></button>
+        <button on:click={openSidebar}><strong>Comment</strong></button>
       </div>
     {/each}
     

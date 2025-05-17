@@ -7,3 +7,11 @@ const app = mount(App, {
 })
 
 export default app
+
+const todayDate: Date = new Date();
+const elements: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+
+const currentDateElement = document.getElementById("current-date");
+if (currentDateElement) {
+    currentDateElement.innerHTML = todayDate.toLocaleDateString('en-US', elements);
+}

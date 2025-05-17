@@ -130,7 +130,7 @@ Settings for buttons.
   z-index: 1;
   top: 0;
   right: 0;
-  background-color: white;
+  background-color: rgb(245, 245, 240);
   overflow-x: hidden;
   transition: 0.5s;
 }

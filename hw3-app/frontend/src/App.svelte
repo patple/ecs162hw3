@@ -4,6 +4,7 @@
   let articles: any[] = [];
   let commentInput: string ='';
   let submittedComment: string[] = [];
+  let activeComment: boolean = false;
 
   onMount(async () => {
     try {
@@ -52,22 +53,28 @@
   <div class ="sidebar-comments">
     <div class = "Comment-bar">
       <h1>Comments</h1>
+
       <form on:submit|preventDefault={() =>{
         if (commentInput.trim() !== ''){
           submittedComment = [...submittedComment, commentInput.trim()]
           commentInput =''
+          activeComment = false;
         }
       }}>
-        <input type = "text" placeholder="Share your thoughts." name="comment" bind:value={commentInput}>
-        <button type = "submit" aria-label = "submit comment"></button>
-      </form>
+        <input type = "text" placeholder="Share your thoughts." name="comment" bind:value={commentInput} on:focus={() => activeComment = true}/>
+        {#if activeComment}
+          <div>
+          <button type="button" on:click={()=> {commentInput = ''; activeComment = false;}}> Cancel </button>
+          <button type = "submit" aria-label = "submit comment">Submit</button>
+          </div>
+      {/if}
+    </form>
       <ul>
         {#each submittedComment as comment}
           <li>{comment}</li>
           {/each}
       </ul>
     </div>
-    
   </div>
 </div>
 

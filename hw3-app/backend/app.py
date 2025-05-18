@@ -9,7 +9,7 @@ load_dotenv(dotenv_path='.env.prod')
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-CORS(app) 
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 
 oauth = OAuth(app)
@@ -56,13 +56,35 @@ def authorize():
     nonce = session.get('nonce')
 
     user_info = oauth.flask_app.parse_id_token(token, nonce=nonce)  # or use .get('userinfo').json()
-    session['user'] = user_info
+    
+    email = user_info.get('email')
+    
+    role = 'user'
+    if email == 'admin@hw3.com':
+        role = 'admin'
+    elif email == 'moderator@hw3.com':
+        role = 'moderator'
+        
+        
+    session['user'] = {
+        'email': email,
+        'role': role,
+        'username': user_info.get('username')
+    }
     return redirect(os.getenv('FRONTEND_URL','http://localhost:5173/'))
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
+
+@app.route('/api/user')
+def check_user():
+    user = session.get('user')
+    if user: 
+        return jsonify(user)
+    return jsonify({'error': 'NOT LOGGED IN'}),401
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)

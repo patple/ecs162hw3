@@ -5,6 +5,33 @@
   let commentInput: string = '';
   let currentIndex: number = -1;
   let articleComments: {[key: number]: string[]} = {};
+  let user: {email:string; role:string; username: string} | null = null;
+
+ async function fetchUser(){
+  try{
+    const res = await fetch('http://localhost:8000/api/user', {credentials:'include'})
+    if(res.ok){
+      user = await res.json();
+    }else{
+      user = null;
+    }
+  }catch(error){
+    user = null;
+  }
+ }
+
+ async function logout(){
+   try{
+    const res = await fetch('http://localhost:8000/logout', {method:'GET', credentials:'include'})
+    if(res.ok){
+      window.location.href ='/'
+    }else{
+      console.error('Failed logout')
+    }
+  }catch(error){
+    console.error('Failed logout', error)
+  }
+ }
 
   onMount(async () => {
     try {
@@ -31,6 +58,7 @@
     } catch (error) {
       console.error('Failed to fetch API key:', error);
     }
+    await fetchUser();
   });
 
   function openSidebar(index: number): void {
@@ -61,6 +89,7 @@
     articleComments[currentIndex] = newComments;      
     commentInput = '';
     }
+    
   }
 
 </script>
@@ -72,26 +101,29 @@
       <h1 class="title-font">{#if currentIndex >= 0 && articles[currentIndex] && articles[currentIndex].headline}"{articles[currentIndex].headline.main}"{/if}</h1>
 
       {#if currentIndex >= 0}
-        <form on:submit|preventDefault={submitComment}>
-          <input 
-            type="text" 
-            placeholder="Share your thoughts." 
-            name="comment" 
-            bind:value={commentInput} 
-          />
-          <div>
-            <button type="button" class="button" on:click={() => commentInput = ''}>Cancel</button>
-            <button type="submit" class="button" aria-label="submit comment">Submit</button>
-          </div>
-        </form>
-        
-        {#if articleComments[currentIndex] && articleComments[currentIndex].length > 0}
-          <ul>
-            {#each articleComments[currentIndex] as comment}
-              <li>{comment}</li>
-            {/each}
-          </ul>
+        {#if user}
+          <form on:submit|preventDefault={submitComment}>
+            <input 
+              type="text" 
+              placeholder="Share your thoughts." 
+              name="comment" 
+              bind:value={commentInput} 
+            />
+            <div>
+              <button type="button" class="button" on:click={() => commentInput = ''}>Cancel</button>
+              <button type="submit" class="button" aria-label="submit comment">Submit</button>
+            </div>
+          </form>
+        {:else}
+            <p>LOG IN</p>
         {/if}
+          {#if articleComments[currentIndex] && articleComments[currentIndex].length > 0}
+            <ul>
+              {#each articleComments[currentIndex] as comment}
+                <li>{comment}</li>
+              {/each}
+            </ul>
+          {/if}
       {/if}
     </div>
   </div>
@@ -104,7 +136,12 @@
     </p>
     <div class="button_container">
       <button class="button"><strong>SUBSCRIBE FOR $1/WEEK</strong></button> <!--Button implementation.-->
-      <button class="button" on:click={() => window.location.href = 'http://localhost:8000/login'}><strong>LOG IN</strong></button>
+      {#if user}
+        <button class="button" on:click={logout}><strong>LOG OUT</strong></button>
+      {:else}
+        <button class="button" on:click={() => window.location.href = 'http://localhost:8000/login'}><strong>LOG IN</strong></button>
+      {/if}
+      
     </div>
 
     <!--Using flex box to implement the information in the header.-->

@@ -83,7 +83,7 @@
     <button class="button"><strong>SUBSCRIBE FOR $1/WEEK</strong></button> <!--Button implementation.-->
 
    
-    <button class="button" on:click={() => window.location.href = 'http://127.0.0.1:8000/'}><strong>LOG IN</strong></button>
+    <button class="button" on:click={() => window.location.href = 'http://localhost:8000/login'}><strong>LOG IN</strong></button>
     </div>
 
     <!--Using flex box to implement the information in the header.-->

@@ -47,7 +47,13 @@
 <div id= "sideBarDisplay" class ="overLay">
   <button class= "exitSidebar" on:click={closeSidebar}>X</button>
   <div class ="sidebar-comments">
-    <p>Comments</p>
+    <div class = "Comment-bar">
+      <form action="/action_page.php">
+        <input type = "text" placeholder="Share your thoughts." name="comment">
+        <button type = "submit" aria-label = "submit comment"></button>
+      </form>
+    </div>
+    <h1>Comments</h1>
   </div>
 </div>
 

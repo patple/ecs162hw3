@@ -5,6 +5,10 @@
   let commentInput: string = '';
   let currentIndex: number = -1;
   let articleComments: {[key: number]: string[]} = {};
+  
+  let replyComment: string = '';
+  let currentReply: {articleIndex: number, commentIndex: number} | null = null;
+  let articleReplies: {[articleIndex: number]: {[commentIndex: number]: string[]}} = {};
 
   onMount(async () => {
     try {
@@ -26,6 +30,7 @@
       }
       for (let i = 0; i < articles.length; i++) {
         articleComments[i] = [];
+        articleReplies[i] = {}; 
       }
 
     } catch (error) {
@@ -48,6 +53,8 @@
     }
     currentIndex = -1;
     commentInput = '';
+    replyComment = '';
+    currentReply = null;
   }
 
   function submitComment(): void {
@@ -62,14 +69,49 @@
     commentInput = '';
     }
   }
-
+  
+  function submitReply(): void {
+    if (replyComment.trim() !== '' && currentReply) {
+      const { articleIndex, commentIndex } = currentReply;
+      if (!articleReplies[articleIndex]) {
+        articleReplies[articleIndex] = {};
+      }
+      
+      if (!articleReplies[articleIndex][commentIndex]) {
+        articleReplies[articleIndex][commentIndex] = [];
+      }
+      
+      const oldReplies = articleReplies[articleIndex][commentIndex];
+      const newReplies = oldReplies.slice(); 
+      newReplies.push(replyComment.trim());
+      articleReplies[articleIndex][commentIndex] = newReplies;
+      
+      replyComment = '';
+      currentReply = null;
+    }
+  }
+  
+  function toggleReply(commentIndex: number): void {
+    if (currentReply && 
+        currentReply.articleIndex === currentIndex && 
+        currentReply.commentIndex === commentIndex) {
+      currentReply = null;
+    } else {
+      currentReply = {
+        articleIndex: currentIndex,
+        commentIndex: commentIndex
+      };
+      replyComment = '';
+    }
+  }
 </script>
+
 <div id="sideBarDisplay" class="overLay">
   <button class="exitSidebar" on:click={closeSidebar}>X</button>
   
   <div class="sidebar-comments">
     <div class="Comment-bar">
-      <h1 class="title-font">{#if currentIndex >= 0 && articles[currentIndex] && articles[currentIndex].headline}"{articles[currentIndex].headline.main}"{/if}</h1>
+      <h1 class="title-font">{#if currentIndex >= 0 && articles[currentIndex] && articles[currentIndex].headline}'{articles[currentIndex].headline.main}'{/if}</h1>
 
       {#if currentIndex >= 0}
         <form on:submit|preventDefault={submitComment}>
@@ -87,8 +129,33 @@
         
         {#if articleComments[currentIndex] && articleComments[currentIndex].length > 0}
           <ul>
-            {#each articleComments[currentIndex] as comment}
+            {#each articleComments[currentIndex] as comment, commentIndex}
               <li>{comment}</li>
+              <button class="reply-button" on:click={() => toggleReply(commentIndex)}>
+                Reply
+              </button>
+              <hr>
+              
+              {#if currentReply && currentReply.articleIndex === currentIndex && currentReply.commentIndex === commentIndex}
+                <form on:submit|preventDefault={() => submitReply()}>
+                  <input 
+                    type="text" 
+                    placeholder="Replying to User..." 
+                    bind:value={replyComment}
+                  />
+                  <button type="submit" class="button" aria-label="submit reply">Submit</button>
+                </form>
+              {/if}
+              
+              {#if articleReplies[currentIndex] && 
+                  articleReplies[currentIndex][commentIndex] && 
+                  articleReplies[currentIndex][commentIndex].length > 0}
+                <ul class="reply">
+                  {#each articleReplies[currentIndex][commentIndex] as reply}
+                    <li>{reply}</li>
+                  {/each}
+                </ul>
+              {/if}
             {/each}
           </ul>
         {/if}
@@ -113,13 +180,13 @@
     flex-direction: row;
     justify-content: space-between;
     ">
-    <div>
-        <p id="date" style="font-family: Arial, Helvetica, sans-serif;"></p>
+      <div>
+        <p id="date" class="date-format"></p>
         <script>    // Gets current date
             const date = new Date();
             document.getElementById("date").innerHTML = date.toDateString();
         </script>
-    </div>
+      </div>
       <div>
         SMP
       </div>
@@ -135,7 +202,7 @@
   <div class="grid">
     {#each articles as article, index}
       <div class="grid-item">
-        {#if article.multimedia.default.url}
+        {#if article.multimedia && article.multimedia.default && article.multimedia.default.url}
           <div class="images">
             <img 
               src={article.multimedia.default.url}
@@ -144,7 +211,7 @@
             />
           </div>
         {/if}
-        <h1>{article.headline.main}</h1>
+        <h1 class="title-font">{article.headline.main}</h1>
         <p>{article.abstract}</p>
         <button class="button" on:click={() => openSidebar(index)}>
           <strong>Comment {#if articleComments[index] && articleComments[index].length > 0}({articleComments[index].length}){/if}</strong>
@@ -157,3 +224,4 @@
     <p class="footer">@2025 The New York Times Company</p>
   </footer>
 </main>
+

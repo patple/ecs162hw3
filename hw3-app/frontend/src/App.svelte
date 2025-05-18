@@ -2,9 +2,9 @@
   import { onMount } from 'svelte';
   let apiKey: string = '';
   let articles: any[] = [];
-  let commentInput: string ='';
-  let submittedComment: string[] = [];
-  let activeComment: boolean = false;
+  let commentInput: string = '';
+  let currentIndex: number = -1;
+  let articleComments: {[key: number]: string[]} = {};
 
   onMount(async () => {
     try {
@@ -24,73 +24,87 @@
           multimedia: article.multimedia
         });
       }
+      for (let i = 0; i < articles.length; i++) {
+        articleComments[i] = [];
+      }
+
     } catch (error) {
       console.error('Failed to fetch API key:', error);
     }
-    
   });
 
-  function openSidebar(): void{
+  function openSidebar(index: number): void {
+    currentIndex = index;
     const sidebar = document.getElementById("sideBarDisplay");
-    if (sidebar){
-      sidebar.style.width = "30%"
+    if (sidebar) {
+      sidebar.style.width = "30%";
     }
   }
 
-  function closeSidebar(): void{
+  function closeSidebar(): void {
     const sidebar = document.getElementById("sideBarDisplay");
-    if (sidebar){
-      sidebar.style.width = "0%"
+    if (sidebar) {
+      sidebar.style.width = "0%";
+    }
+    currentIndex = -1;
+    commentInput = '';
+  }
+
+  function submitComment(): void {
+    if (commentInput.trim() !== '' && currentIndex >= 0) {
+      if (!articleComments[currentIndex]) {
+        articleComments[currentIndex] = [];
+      }
+    const oldComments = articleComments[currentIndex];
+    const newComments = oldComments.slice(); 
+    newComments.push(commentInput.trim());
+    articleComments[currentIndex] = newComments;      
+    commentInput = '';
     }
   }
 
 </script>
-
-
-<div id= "sideBarDisplay" class ="overLay">
-  <button class= "exitSidebar" on:click={closeSidebar}>X</button>
+<div id="sideBarDisplay" class="overLay">
+  <button class="exitSidebar" on:click={closeSidebar}>X</button>
   
-  <div class ="sidebar-comments">
-    <div class = "Comment-bar">
-      <h1>Comments</h1>
+  <div class="sidebar-comments">
+    <div class="Comment-bar">
+      <h1 class="title-font">{#if currentIndex >= 0 && articles[currentIndex] && articles[currentIndex].headline}"{articles[currentIndex].headline.main}"{/if}</h1>
 
-      <form on:submit|preventDefault={() =>{
-        if (commentInput.trim() !== ''){
-          submittedComment = [...submittedComment, commentInput.trim()]
-          commentInput =''
-          activeComment = false;
-        }
-      }}>
-        <input type = "text" placeholder="Share your thoughts." name="comment" bind:value={commentInput} on:focus={() => activeComment = true}/>
-        {#if activeComment}
+      {#if currentIndex >= 0}
+        <form on:submit|preventDefault={submitComment}>
+          <input 
+            type="text" 
+            placeholder="Share your thoughts." 
+            name="comment" 
+            bind:value={commentInput} 
+          />
           <div>
-          <button type="button" on:click={()=> {commentInput = ''; activeComment = false;}}> Cancel </button>
-          <button type = "submit" aria-label = "submit comment">Submit</button>
+            <button type="button" class="button" on:click={() => commentInput = ''}>Cancel</button>
+            <button type="submit" class="button" aria-label="submit comment">Submit</button>
           </div>
+        </form>
+        
+        {#if articleComments[currentIndex] && articleComments[currentIndex].length > 0}
+          <ul>
+            {#each articleComments[currentIndex] as comment}
+              <li>{comment}</li>
+            {/each}
+          </ul>
+        {/if}
       {/if}
-    </form>
-      <ul>
-        {#each submittedComment as comment}
-          <li>{comment}</li>
-          {/each}
-      </ul>
     </div>
   </div>
 </div>
 
 <main>
-
   <header>
-
-
     <p class="Language">
         U.S.    International    Canada    Español    中文 <!--Language implementation.-->
     </p>
     <div class="button_container">
-    <button class="button"><strong>SUBSCRIBE FOR $1/WEEK</strong></button> <!--Button implementation.-->
-
-   
-    <button class="button" on:click={() => window.location.href = 'http://localhost:8000/login'}><strong>LOG IN</strong></button>
+      <button class="button"><strong>SUBSCRIBE FOR $1/WEEK</strong></button> <!--Button implementation.-->
+      <button class="button" on:click={() => window.location.href = 'http://localhost:8000/login'}><strong>LOG IN</strong></button>
     </div>
 
     <!--Using flex box to implement the information in the header.-->
@@ -106,24 +120,23 @@
             document.getElementById("date").innerHTML = date.toDateString();
         </script>
     </div>
-    <div>
+      <div>
         SMP
-    </div>
+      </div>
     </div>
     <div style="text-align: center;">
       <img class="img" alt="New York Times Logo" src="https://d24wuq6o951i2g.cloudfront.net/img/events/id/290/2900492/assets/2a9.f63.NYT-large-black-clear-background.png"  style="max-width: 100%; height: auto">
     </div>
-</header>
+  </header>
 
   <hr class="lines">
   <hr class="lines">
-
 
   <div class="grid">
-    {#each articles as article}
+    {#each articles as article, index}
       <div class="grid-item">
         {#if article.multimedia.default.url}
-          <div class="image-container">
+          <div class="images">
             <img 
               src={article.multimedia.default.url}
               alt={article.headline.main}
@@ -133,10 +146,11 @@
         {/if}
         <h1>{article.headline.main}</h1>
         <p>{article.abstract}</p>
-        <button on:click={openSidebar}><strong>Comment</strong></button>
+        <button class="button" on:click={() => openSidebar(index)}>
+          <strong>Comment {#if articleComments[index] && articleComments[index].length > 0}({articleComments[index].length}){/if}</strong>
+        </button>
       </div>
     {/each}
-    
   </div>
 
   <footer>

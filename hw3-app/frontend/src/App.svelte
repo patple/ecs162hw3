@@ -1,10 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { preventDefault } from 'svelte/legacy';
   let apiKey: string = '';
   let articles: any[] = [];
   let commentInput: string ='';
   let submittedComment: string[] = [];
   let activeComment: boolean = false;
+  let replyComment ='';
+  let currentReply: number | null = null;
+  let replies:{[key: number]: string[]} = {};
 
   onMount(async () => {
     try {
@@ -70,10 +74,32 @@
       {/if}
     </form>
       <ul>
-        {#each submittedComment as comment}
+        {#each submittedComment as comment, index}
+          
           <li>{comment}</li>
+          <button class ="reply-button" on:click={()=>  currentReply = (currentReply == index ? null : index)}> Reply </button>
+          <hr>
+          {#if currentReply == index}
+          <form on:submit|preventDefault ={() => {
+            if (replyComment.trim() !== ''){
+              if (!replies[index]) replies[index] = [];
+              replies[index] =[...replies[index], replyComment.trim()];
+              replyComment = ''
+              currentReply = null;
+            }
+          }}>
+          <input type = "text" placeholder="Replying to User...." bind:value={replyComment}>
+          <button type = "submit" aria-label = "submit comment">Submit</button>
+        </form>
+        {/if}
+        {#if replies[index]}
+          <ul class="reply">
+            {#each replies[index] as reply}
+              <li>{reply}</li>
           {/each}
       </ul>
+      {/if}
+      {/each}
     </div>
   </div>
 </div>

@@ -104,6 +104,62 @@
       replyComment = '';
     }
   }
+
+function deleteComment(commentIndex: number): void {
+  if (currentIndex < 0 || !articleComments[currentIndex]) {
+    return;
+  }
+  const comments = articleComments[currentIndex];
+  const newComments: string[] = [];
+
+  for (let i = 0; i < comments.length; i++) {
+    if (i !== commentIndex) {
+      newComments.push(comments[i]);
+    }
+  }
+
+  articleComments[currentIndex] = newComments;
+  if (articleReplies[currentIndex] && articleReplies[currentIndex][commentIndex]) {
+    delete articleReplies[currentIndex][commentIndex];
+  }
+
+  if (articleReplies[currentIndex]) {
+    const oldReplies = articleReplies[currentIndex];
+    const newReplies: { [key: number]: string[] } = {};
+    for (let key in oldReplies) {
+      const replyIndex = parseInt(key);
+      const replies = oldReplies[replyIndex];
+      if (replyIndex < commentIndex) {
+        newReplies[replyIndex] = replies;
+      } else if (replyIndex > commentIndex) {
+        newReplies[replyIndex - 1] = replies;
+      }
+    }
+
+    articleReplies[currentIndex] = newReplies;
+  }
+  if (currentReply &&
+      currentReply.articleIndex === currentIndex &&
+      currentReply.commentIndex === commentIndex) {
+    currentReply = null;
+    replyComment = '';
+  }
+}
+
+function deleteReply(commentIndex: number, replyIndex: number): void {
+  if (currentIndex < 0 || !articleReplies[currentIndex] || !articleReplies[currentIndex][commentIndex]
+  ) {
+    return;
+  }
+  const replies = articleReplies[currentIndex][commentIndex];
+  const newReplies: string[] = [];
+  for (let i = 0; i < replies.length; i++) {
+    if (i !== replyIndex) {
+      newReplies.push(replies[i]);
+    }
+  }
+  articleReplies[currentIndex][commentIndex] = newReplies;
+}
 </script>
 
 <div id="sideBarDisplay" class="overLay">
@@ -130,10 +186,15 @@
         {#if articleComments[currentIndex] && articleComments[currentIndex].length > 0}
           <ul>
             {#each articleComments[currentIndex] as comment, commentIndex}
-              <li>{comment}</li>
-              <button class="reply-button" on:click={() => toggleReply(commentIndex)}>
-                Reply
-              </button>
+              <li>
+                {comment}
+                  <button class="reply-button" on:click={() => toggleReply(commentIndex)}>
+                    Reply
+                  </button>
+                  <button class="delete-button" on:click={() => deleteComment(commentIndex)}>
+                    Delete
+                  </button>
+              </li>
               <hr>
               
               {#if currentReply && currentReply.articleIndex === currentIndex && currentReply.commentIndex === commentIndex}
@@ -151,8 +212,13 @@
                   articleReplies[currentIndex][commentIndex] && 
                   articleReplies[currentIndex][commentIndex].length > 0}
                 <ul class="reply">
-                  {#each articleReplies[currentIndex][commentIndex] as reply}
-                    <li>{reply}</li>
+                  {#each articleReplies[currentIndex][commentIndex] as reply, replyIndex}
+                    <li>
+                      {reply}
+                      <button class="delete-button" on:click={() => deleteReply(commentIndex, replyIndex)}>
+                        Delete
+                      </button>
+                    </li>
                   {/each}
                 </ul>
               {/if}

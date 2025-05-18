@@ -1,7 +1,8 @@
-from flask import Flask, redirect, url_for, jsonify, session
+from flask import Flask, redirect, url_for, jsonify, render_template, request, url_for, session
 from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 import os
+from pymongo import MongoClient
 from flask_cors import CORS
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -12,6 +13,10 @@ oauth = OAuth(app)
 
 nonce = generate_token()
 
+client = MongoClient('localhost', 27017)
+
+db = client.flask_db
+todos = db.todos
 
 oauth.register(
     name=os.getenv('OIDC_CLIENT_NAME'),

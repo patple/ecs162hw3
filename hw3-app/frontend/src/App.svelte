@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   let apiKey: string = '';
   let articles: any[] = [];
+  let commentInput: string ='';
+  let submittedComment: string[] = [];
 
   onMount(async () => {
     try {
@@ -46,14 +48,26 @@
 
 <div id= "sideBarDisplay" class ="overLay">
   <button class= "exitSidebar" on:click={closeSidebar}>X</button>
+  
   <div class ="sidebar-comments">
     <div class = "Comment-bar">
-      <form action="/action_page.php">
-        <input type = "text" placeholder="Share your thoughts." name="comment">
+      <h1>Comments</h1>
+      <form on:submit|preventDefault={() =>{
+        if (commentInput.trim() !== ''){
+          submittedComment = [...submittedComment, commentInput.trim()]
+          commentInput =''
+        }
+      }}>
+        <input type = "text" placeholder="Share your thoughts." name="comment" bind:value={commentInput}>
         <button type = "submit" aria-label = "submit comment"></button>
       </form>
+      <ul>
+        {#each submittedComment as comment}
+          <li>{comment}</li>
+          {/each}
+      </ul>
     </div>
-    <h1>Comments</h1>
+    
   </div>
 </div>
 

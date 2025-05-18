@@ -4,6 +4,9 @@ from authlib.common.security import generate_token
 import os
 from pymongo import MongoClient
 from flask_cors import CORS
+from dotenv import load_dotenv
+load_dotenv(dotenv_path='.env.prod')
+
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 CORS(app) 
@@ -54,7 +57,7 @@ def authorize():
 
     user_info = oauth.flask_app.parse_id_token(token, nonce=nonce)  # or use .get('userinfo').json()
     session['user'] = user_info
-    return redirect('/')
+    return redirect(os.getenv('FRONTEND_URL','http://localhost:5173/'))
 
 @app.route('/logout')
 def logout():

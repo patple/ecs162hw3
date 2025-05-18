@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { preventDefault } from 'svelte/legacy';
   let apiKey: string = '';
   let articles: any[] = [];
   let commentInput: string ='';

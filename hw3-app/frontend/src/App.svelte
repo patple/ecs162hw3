@@ -56,8 +56,12 @@
         });
       }
       for (let i = 0; i < articles.length; i++) {
-        articleComments[i] = [];
-        articleReplies[i] = {}; 
+        articleComments[i] = [
+          "WOW this article is so poggers"
+        ];
+        articleReplies[i] = {
+          0:[" I KNOW RIGHT THIS IS SO COOL I HECKING LOVE DAVIS!!"]
+        }; 
       }
 
     } catch (error) {
@@ -216,7 +220,9 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
             </div>
           </form>
         {:else}
-            <p>LOG IN</p>
+            <script>
+              window.location.href = 'http://localhost:8000/login'
+            </script>
           {/if}
         {/if}
         

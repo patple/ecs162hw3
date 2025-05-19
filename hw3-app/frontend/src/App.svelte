@@ -25,7 +25,7 @@
     "Yeah this local news is good."
   ]
 
-
+//gets user info to tell users appart 
  async function fetchUser(){
   try{
     const res = await fetch('http://localhost:8000/api/user', {credentials:'include'})
@@ -107,7 +107,7 @@
     replyComment = '';
     currentReply = null;
   }
-
+  //creates new comments 
   function submitComment(): void { 
     if (commentInput.trim() !== '' && currentIndex >= 0) {
       if (!articleComments[currentIndex]) {
@@ -121,7 +121,7 @@
     }
     
   }
-  
+  // creates new reply to comments
   function submitReply(): void {
     if (replyComment.trim() !== '' && currentReply) {
       const { articleIndex, commentIndex } = currentReply;
@@ -143,6 +143,7 @@
     }
   }
   
+  // toggle to hide or show the reply input for a comment
   function toggleReply(commentIndex: number): void {
     if (currentReply && 
         currentReply.articleIndex === currentIndex && 
@@ -157,6 +158,7 @@
     }
   }
 
+  // deletes comments
 function deleteComment(commentIndex: number): void {
   if (currentIndex < 0 || !articleComments[currentIndex]) {
     return;
@@ -164,6 +166,7 @@ function deleteComment(commentIndex: number): void {
   const comments = articleComments[currentIndex];
   const newComments: string[] = [];
 
+  // pushes all comments besides the deleted one 
   for (let i = 0; i < comments.length; i++) {
     if (i !== commentIndex) {
       newComments.push(comments[i]);
@@ -175,6 +178,7 @@ function deleteComment(commentIndex: number): void {
     delete articleReplies[currentIndex][commentIndex];
   }
 
+  //deleted the replies in that comment
   if (articleReplies[currentIndex]) {
     const oldReplies = articleReplies[currentIndex];
     const newReplies: { [key: number]: Reply[] } = {};
@@ -198,6 +202,7 @@ function deleteComment(commentIndex: number): void {
   }
 }
 
+//deletes replies for a comment when the comment is deleted 
 function deleteReply(commentIndex: number, replyIndex: number): void {
   if (currentIndex < 0 || !articleReplies[currentIndex] || !articleReplies[currentIndex][commentIndex]
   ) {
@@ -226,6 +231,7 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
       <h1 class="title-font">{#if currentIndex >= 0 && articles[currentIndex] && articles[currentIndex].headline}'{articles[currentIndex].headline.main}'{/if}</h1>
 
       {#if currentIndex >= 0}
+        <!-- checks if user is logged in-->
         {#if user}
           <form on:submit|preventDefault={submitComment}>
             <input 
@@ -239,13 +245,14 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
               <button type="submit" class="button" aria-label="submit comment">Submit</button>
             </div>
           </form>
+          <!-- if not they are redirected to login-->
         {:else}
             <script>
               window.location.href = 'http://localhost:8000/login'
             </script>
           {/if}
         {/if}
-        
+        <!--if there are already comments allows the user to see the reply button-->
         {#if articleComments[currentIndex] && articleComments[currentIndex].length > 0}
           <ul>
             {#each articleComments[currentIndex] as comment, commentIndex}
@@ -254,6 +261,7 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
                   <button class="reply-button" on:click={() => toggleReply(commentIndex)}>
                     Reply
                   </button>
+                  <!--checks if the user role is mod if so they can delete-->
                   {#if user && user.role == 'moderator'}
                     <button class="delete-button" on:click={() => deleteComment(commentIndex)}>
                       Delete
@@ -261,7 +269,7 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
                   {/if}
               </li>
               <hr>
-              
+              <!--displays the reply textbox if there is a comment to reply to and if the user presses the reply button-->
               {#if currentReply && currentReply.articleIndex === currentIndex && currentReply.commentIndex === commentIndex}
                 <form on:submit|preventDefault={() => submitReply()}>
                   <input 
@@ -272,7 +280,7 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
                   <button type="submit" class="button" aria-label="submit reply">Submit</button>
                 </form>
               {/if}
-              
+              <!--allows for replies under replies-->
               {#if articleReplies[currentIndex] && 
                   articleReplies[currentIndex][commentIndex] && 
                   articleReplies[currentIndex][commentIndex].length > 0}
@@ -283,6 +291,7 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
                       <button class="reply-button" on:click={() => toggleReply(commentIndex)}>
                       Reply
                       </button>
+                      <!--checks if the user role is mod if so they can delete-->
                       {#if user && user.role == 'moderator'}
                         <button class="delete-button" on:click={() => deleteReply(commentIndex, replyIndex)}>
                           Delete
@@ -306,9 +315,11 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
     </p>
     <div class="button_container">
       <button class="button"><strong>SUBSCRIBE FOR $1/WEEK</strong></button> <!--Button implementation.-->
+      <!-- if user is logged in the logout button is visible-->
       {#if user}
         <button class="button" on:click={logout}><strong>LOG OUT</strong></button>
       {:else}
+      <!-- if not they can login and redirceted to dex login-->
         <button class="button" on:click={() => window.location.href = 'http://localhost:8000/login'}><strong>LOG IN</strong></button>
       {/if}
       
@@ -354,6 +365,7 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
         <h1 class="title-font">{article.headline.main}</h1>
         <p>{article.abstract}</p>
         <button class="button" on:click={() => openSidebar(index)}>
+          <!--comment button for each article-->
           <strong>Comment {#if articleComments[index] && articleComments[index].length > 0}({articleComments[index].length}){/if}</strong>
         </button>
       </div>

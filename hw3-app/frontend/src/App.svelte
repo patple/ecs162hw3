@@ -228,9 +228,11 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
                   <button class="reply-button" on:click={() => toggleReply(commentIndex)}>
                     Reply
                   </button>
-                  <button class="delete-button" on:click={() => deleteComment(commentIndex)}>
-                    Delete
-                  </button>
+                  {#if user && user.role == 'moderator'}
+                    <button class="delete-button" on:click={() => deleteComment(commentIndex)}>
+                      Delete
+                    </button>
+                  {/if}
               </li>
               <hr>
               
@@ -252,9 +254,11 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
                   {#each articleReplies[currentIndex][commentIndex] as reply, replyIndex}
                     <li>
                       {reply}
-                      <button class="delete-button" on:click={() => deleteReply(commentIndex, replyIndex)}>
-                        Delete
-                      </button>
+                      {#if user && user.role == 'moderator'}
+                        <button class="delete-button" on:click={() => deleteReply(commentIndex, replyIndex)}>
+                          Delete
+                        </button>
+                      {/if}
                     </li>
                   {/each}
                 </ul>

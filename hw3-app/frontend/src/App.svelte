@@ -7,6 +7,25 @@
   let articleComments: {[key: number]: string[]} = {};
   let user: {email:string; role:string; username: string} | null = null;
 
+  const staticComments = [
+    "HELLO CHAT",
+    "I HECKING LOVE READING THE NEWS ABOUT DAVIS ITS MY FAVORITE",
+    "HOW DO YOU TURN OFF CAPS LOCK?",
+    "This is all fake news",
+    "Chat is this news real??",
+    "Very interesting thanks for the updates"
+  ]
+
+  const staticReplies = [
+    "WASSUP DAWG",
+    "ME TOO MAN WE SHOULD HANG",
+    "It's on the left of your keyboard under tab.",
+    "Nuh Uh",
+    "This generation is cooked.",
+    "Yeah this local news is good."
+  ]
+
+
  async function fetchUser(){
   try{
     const res = await fetch('http://localhost:8000/api/user', {credentials:'include'})
@@ -56,12 +75,8 @@
         });
       }
       for (let i = 0; i < articles.length; i++) {
-        articleComments[i] = [
-          "WOW this article is so poggers"
-        ];
-        articleReplies[i] = {
-          0:[" I KNOW RIGHT THIS IS SO COOL I HECKING LOVE DAVIS!!"]
-        }; 
+        articleComments[i] = [staticComments[i]];
+        articleReplies[i] = { 0: [staticReplies[i]]}; 
       }
 
     } catch (error) {

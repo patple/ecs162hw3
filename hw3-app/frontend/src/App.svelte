@@ -85,7 +85,7 @@
     currentReply = null;
   }
 
-  function submitComment(): void {
+  function submitComment(): void { 
     if (commentInput.trim() !== '' && currentIndex >= 0) {
       if (!articleComments[currentIndex]) {
         articleComments[currentIndex] = [];
@@ -191,6 +191,9 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
 }
 </script>
 
+
+
+
 <div id="sideBarDisplay" class="overLay">
   <button class="exitSidebar" on:click={closeSidebar}>X</button>
   
@@ -214,18 +217,7 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
           </form>
         {:else}
             <p>LOG IN</p>
-        <form on:submit|preventDefault={submitComment}>
-          <input 
-            type="text" 
-            placeholder="Share your thoughts." 
-            name="comment" 
-            bind:value={commentInput} 
-          />
-          <div>
-            <button type="button" class="button" on:click={() => commentInput = ''}>Cancel</button>
-            <button type="submit" class="button" aria-label="submit comment">Submit</button>
-          </div>
-        </form>
+          {/if}
         {/if}
         
         {#if articleComments[currentIndex] && articleComments[currentIndex].length > 0}
@@ -270,14 +262,6 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
             {/each}
           </ul>
         {/if}
-          {#if articleComments[currentIndex] && articleComments[currentIndex].length > 0}
-            <ul>
-              {#each articleComments[currentIndex] as comment}
-                <li>{comment}</li>
-              {/each}
-            </ul>
-          {/if}
-      {/if}
     </div>
   </div>
 </div>

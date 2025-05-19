@@ -216,7 +216,8 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
 
 
 
-
+<!--The logic for the sidebar,comments, replies and user auth-->
+<!--User must be logged in to comment and mods are the only one that can delete comments-->
 <div id="sideBarDisplay" class="overLay">
   <button class="exitSidebar" on:click={closeSidebar}>X</button>
   

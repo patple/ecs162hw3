@@ -58,4 +58,21 @@ test('testAPI', async () => {
     } catch (error) {
       console.error('News fetch failed', error);
     }
+    
 });
+
+
+// checks if users are able to login
+test('validLogin', async() =>{
+  const res = await fetch('http://localhost:8000/login', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      email: 'admin@hw3.com',
+      password: 'password'
+    })
+  })
+
+  expect(res.status).not.toBe(404)
+})
+

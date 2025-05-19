@@ -18,7 +18,7 @@
 
   const staticReplies = [
     "WASSUP DAWG",
-    "ME TOO MAN WE SHOULD HANG",
+    "ME TOO MAN WE SHOULD HANG OUT",
     "It's on the left of your keyboard under tab.",
     "Nuh Uh",
     "This generation is cooked.",
@@ -52,9 +52,13 @@
   }
  }
   
+  interface Reply{
+    text: string;
+    replies: Reply[];
+  }
   let replyComment: string = '';
   let currentReply: {articleIndex: number, commentIndex: number} | null = null;
-  let articleReplies: {[articleIndex: number]: {[commentIndex: number]: string[]}} = {};
+  let articleReplies: {[articleIndex: number]: {[commentIndex: number]: Reply[]}} = {}
 
   onMount(async () => {
     try {
@@ -76,7 +80,7 @@
       }
       for (let i = 0; i < articles.length; i++) {
         articleComments[i] = [staticComments[i]];
-        articleReplies[i] = { 0: [staticReplies[i]]}; 
+        articleReplies[i] = { 0: [{text: staticReplies[i], replies:[]}]}
       }
 
     } catch (error) {
@@ -131,7 +135,7 @@
       
       const oldReplies = articleReplies[articleIndex][commentIndex];
       const newReplies = oldReplies.slice(); 
-      newReplies.push(replyComment.trim());
+      newReplies.push({text: replyComment.trim(), replies: []})
       articleReplies[articleIndex][commentIndex] = newReplies;
       
       replyComment = '';
@@ -173,7 +177,7 @@ function deleteComment(commentIndex: number): void {
 
   if (articleReplies[currentIndex]) {
     const oldReplies = articleReplies[currentIndex];
-    const newReplies: { [key: number]: string[] } = {};
+    const newReplies: { [key: number]: Reply[] } = {};
     for (let key in oldReplies) {
       const replyIndex = parseInt(key);
       const replies = oldReplies[replyIndex];
@@ -200,7 +204,7 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
     return;
   }
   const replies = articleReplies[currentIndex][commentIndex];
-  const newReplies: string[] = [];
+  const newReplies: Reply[] = [];
   for (let i = 0; i < replies.length; i++) {
     if (i !== replyIndex) {
       newReplies.push(replies[i]);
@@ -274,7 +278,10 @@ function deleteReply(commentIndex: number, replyIndex: number): void {
                 <ul class="reply">
                   {#each articleReplies[currentIndex][commentIndex] as reply, replyIndex}
                     <li>
-                      {reply}
+                      {reply.text}
+                      <button class="reply-button" on:click={() => toggleReply(commentIndex)}>
+                      Reply
+                      </button>
                       {#if user && user.role == 'moderator'}
                         <button class="delete-button" on:click={() => deleteReply(commentIndex, replyIndex)}>
                           Delete

@@ -185,3 +185,12 @@ li{
 .reply-button{
   align-items: flex-start;
 }
+
+
+  .delete-button {
+    background-color: white;
+    color: black;
+    border: black;
+    margin-left: 8px;
+  }
+  

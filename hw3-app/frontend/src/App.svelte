@@ -32,6 +32,10 @@
     console.error('Failed logout', error)
   }
  }
+  
+  let replyComment: string = '';
+  let currentReply: {articleIndex: number, commentIndex: number} | null = null;
+  let articleReplies: {[articleIndex: number]: {[commentIndex: number]: string[]}} = {};
 
   onMount(async () => {
     try {
@@ -53,6 +57,7 @@
       }
       for (let i = 0; i < articles.length; i++) {
         articleComments[i] = [];
+        articleReplies[i] = {}; 
       }
 
     } catch (error) {
@@ -76,6 +81,8 @@
     }
     currentIndex = -1;
     commentInput = '';
+    replyComment = '';
+    currentReply = null;
   }
 
   function submitComment(): void {
@@ -91,14 +98,105 @@
     }
     
   }
+  
+  function submitReply(): void {
+    if (replyComment.trim() !== '' && currentReply) {
+      const { articleIndex, commentIndex } = currentReply;
+      if (!articleReplies[articleIndex]) {
+        articleReplies[articleIndex] = {};
+      }
+      
+      if (!articleReplies[articleIndex][commentIndex]) {
+        articleReplies[articleIndex][commentIndex] = [];
+      }
+      
+      const oldReplies = articleReplies[articleIndex][commentIndex];
+      const newReplies = oldReplies.slice(); 
+      newReplies.push(replyComment.trim());
+      articleReplies[articleIndex][commentIndex] = newReplies;
+      
+      replyComment = '';
+      currentReply = null;
+    }
+  }
+  
+  function toggleReply(commentIndex: number): void {
+    if (currentReply && 
+        currentReply.articleIndex === currentIndex && 
+        currentReply.commentIndex === commentIndex) {
+      currentReply = null;
+    } else {
+      currentReply = {
+        articleIndex: currentIndex,
+        commentIndex: commentIndex
+      };
+      replyComment = '';
+    }
+  }
 
+function deleteComment(commentIndex: number): void {
+  if (currentIndex < 0 || !articleComments[currentIndex]) {
+    return;
+  }
+  const comments = articleComments[currentIndex];
+  const newComments: string[] = [];
+
+  for (let i = 0; i < comments.length; i++) {
+    if (i !== commentIndex) {
+      newComments.push(comments[i]);
+    }
+  }
+
+  articleComments[currentIndex] = newComments;
+  if (articleReplies[currentIndex] && articleReplies[currentIndex][commentIndex]) {
+    delete articleReplies[currentIndex][commentIndex];
+  }
+
+  if (articleReplies[currentIndex]) {
+    const oldReplies = articleReplies[currentIndex];
+    const newReplies: { [key: number]: string[] } = {};
+    for (let key in oldReplies) {
+      const replyIndex = parseInt(key);
+      const replies = oldReplies[replyIndex];
+      if (replyIndex < commentIndex) {
+        newReplies[replyIndex] = replies;
+      } else if (replyIndex > commentIndex) {
+        newReplies[replyIndex - 1] = replies;
+      }
+    }
+
+    articleReplies[currentIndex] = newReplies;
+  }
+  if (currentReply &&
+      currentReply.articleIndex === currentIndex &&
+      currentReply.commentIndex === commentIndex) {
+    currentReply = null;
+    replyComment = '';
+  }
+}
+
+function deleteReply(commentIndex: number, replyIndex: number): void {
+  if (currentIndex < 0 || !articleReplies[currentIndex] || !articleReplies[currentIndex][commentIndex]
+  ) {
+    return;
+  }
+  const replies = articleReplies[currentIndex][commentIndex];
+  const newReplies: string[] = [];
+  for (let i = 0; i < replies.length; i++) {
+    if (i !== replyIndex) {
+      newReplies.push(replies[i]);
+    }
+  }
+  articleReplies[currentIndex][commentIndex] = newReplies;
+}
 </script>
+
 <div id="sideBarDisplay" class="overLay">
   <button class="exitSidebar" on:click={closeSidebar}>X</button>
   
   <div class="sidebar-comments">
     <div class="Comment-bar">
-      <h1 class="title-font">{#if currentIndex >= 0 && articles[currentIndex] && articles[currentIndex].headline}"{articles[currentIndex].headline.main}"{/if}</h1>
+      <h1 class="title-font">{#if currentIndex >= 0 && articles[currentIndex] && articles[currentIndex].headline}'{articles[currentIndex].headline.main}'{/if}</h1>
 
       {#if currentIndex >= 0}
         {#if user}
@@ -116,6 +214,61 @@
           </form>
         {:else}
             <p>LOG IN</p>
+        <form on:submit|preventDefault={submitComment}>
+          <input 
+            type="text" 
+            placeholder="Share your thoughts." 
+            name="comment" 
+            bind:value={commentInput} 
+          />
+          <div>
+            <button type="button" class="button" on:click={() => commentInput = ''}>Cancel</button>
+            <button type="submit" class="button" aria-label="submit comment">Submit</button>
+          </div>
+        </form>
+        {/if}
+        
+        {#if articleComments[currentIndex] && articleComments[currentIndex].length > 0}
+          <ul>
+            {#each articleComments[currentIndex] as comment, commentIndex}
+              <li>
+                {comment}
+                  <button class="reply-button" on:click={() => toggleReply(commentIndex)}>
+                    Reply
+                  </button>
+                  <button class="delete-button" on:click={() => deleteComment(commentIndex)}>
+                    Delete
+                  </button>
+              </li>
+              <hr>
+              
+              {#if currentReply && currentReply.articleIndex === currentIndex && currentReply.commentIndex === commentIndex}
+                <form on:submit|preventDefault={() => submitReply()}>
+                  <input 
+                    type="text" 
+                    placeholder="Replying to User..." 
+                    bind:value={replyComment}
+                  />
+                  <button type="submit" class="button" aria-label="submit reply">Submit</button>
+                </form>
+              {/if}
+              
+              {#if articleReplies[currentIndex] && 
+                  articleReplies[currentIndex][commentIndex] && 
+                  articleReplies[currentIndex][commentIndex].length > 0}
+                <ul class="reply">
+                  {#each articleReplies[currentIndex][commentIndex] as reply, replyIndex}
+                    <li>
+                      {reply}
+                      <button class="delete-button" on:click={() => deleteReply(commentIndex, replyIndex)}>
+                        Delete
+                      </button>
+                    </li>
+                  {/each}
+                </ul>
+              {/if}
+            {/each}
+          </ul>
         {/if}
           {#if articleComments[currentIndex] && articleComments[currentIndex].length > 0}
             <ul>
@@ -150,13 +303,13 @@
     flex-direction: row;
     justify-content: space-between;
     ">
-    <div>
-        <p id="date" style="font-family: Arial, Helvetica, sans-serif;"></p>
+      <div>
+        <p id="date" class="date-format"></p>
         <script>    // Gets current date
             const date = new Date();
             document.getElementById("date").innerHTML = date.toDateString();
         </script>
-    </div>
+      </div>
       <div>
         SMP
       </div>
@@ -172,7 +325,7 @@
   <div class="grid">
     {#each articles as article, index}
       <div class="grid-item">
-        {#if article.multimedia.default.url}
+        {#if article.multimedia && article.multimedia.default && article.multimedia.default.url}
           <div class="images">
             <img 
               src={article.multimedia.default.url}
@@ -181,7 +334,7 @@
             />
           </div>
         {/if}
-        <h1>{article.headline.main}</h1>
+        <h1 class="title-font">{article.headline.main}</h1>
         <p>{article.abstract}</p>
         <button class="button" on:click={() => openSidebar(index)}>
           <strong>Comment {#if articleComments[index] && articleComments[index].length > 0}({articleComments[index].length}){/if}</strong>
@@ -194,3 +347,4 @@
     <p class="footer">@2025 The New York Times Company</p>
   </footer>
 </main>
+
